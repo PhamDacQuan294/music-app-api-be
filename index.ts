@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import * as database from "./config/database";
 import clientRoutes from "./api/v1/routes/client/index.route";
+import adminRoutes from "./api/v1/routes/admin/index.route";
 
 dotenv.config();
 
@@ -19,6 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Client Routes
 clientRoutes(app);
+
+// Admin Routes
+adminRoutes(app);
+
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
