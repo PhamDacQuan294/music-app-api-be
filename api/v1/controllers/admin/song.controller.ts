@@ -52,7 +52,8 @@ export const createPost = async (req: Request, res: Response) => {
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
     avatar: req?.body?.avatar?.[0] || "", 
-    audio: req?.body?.audio?.[0] || "",    
+    audio: req?.body?.audio?.[0] || "",   
+    lyrics: req.body.lyrics,
     slug: slug
   };
 
