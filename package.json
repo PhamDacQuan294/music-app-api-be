@@ -25,13 +25,16 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "mongoose": "^8.18.0",
     "mongoose-slug-updater": "^3.3.0",
+    "multer": "^2.0.2",
     "pre-commit": "^1.2.2",
     "rimraf": "^6.0.1",
+    "streamifier": "^0.1.1",
     "unidecode": "^1.1.0"
   }
 }

@@ -7,4 +7,6 @@ router.get("/", controller.index);
 
 router.get("/create", controller.create);
 
+router.post("/create", controller.createPost);
+
 export const songRoutes: Router = router;
