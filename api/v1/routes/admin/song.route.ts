@@ -23,4 +23,14 @@ router.post(
 
 router.delete("/delete/:id", controller.deleteSong);
 
+router.patch(
+  "/edit/:id", 
+  upload.fields([
+    { name: 'avatar', maxCount: 1 }, 
+    { name: 'audio', maxCount: 1 }
+  ]),
+  uploadFields, 
+  controller.editPatch
+);
+
 export const songRoutes: Router = router;

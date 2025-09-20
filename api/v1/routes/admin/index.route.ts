@@ -2,6 +2,7 @@ import { Express } from "express";
 import { systemConfig } from "../../../../config/config";
 import { topicRoutes } from "./topic.route";
 import { songRoutes } from "./song.route";
+import { singerRoutes } from "./singer.route";
 
 const adminRoutes = (app: Express): void => {
 
@@ -10,6 +11,8 @@ const adminRoutes = (app: Express): void => {
   app.use(`${PATH_ADMIN}/topics`, topicRoutes);
 
   app.use(`${PATH_ADMIN}/songs`, songRoutes);
+
+  app.use(`${PATH_ADMIN}/singers`, singerRoutes);
 }
 
 export default adminRoutes;

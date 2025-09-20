@@ -81,3 +81,37 @@ export const deleteSong = async (req: Request, res: Response) => {
     code: 200
   })
 }
+
+// [PATCH] /api/v1/admin/songs/edit/:id
+export const editPatch = async (req: Request, res: Response) => {
+  const id: string = req.params.id;
+
+  console.log(req.body);
+
+  if (req.body.status) {
+    req.body.status = JSON.parse(req.body.status);
+  }
+
+  const dataSong = {
+    title: req.body.title,
+    topicId: req.body.topicId,
+    singerId: req.body.singerId,
+    description: req.body.description,
+    status: req.body.status === true ? "active" : "inactive",
+    avatar: req?.body?.avatar?.[0] || "", 
+    audio: req?.body?.audio?.[0] || "",   
+    lyrics: req.body.lyrics,
+  };
+
+  console.log(dataSong);
+
+  await Song.updateOne({
+    _id: id
+  }, dataSong);
+
+
+  res.json({
+    code: 200
+  })
+
+}
