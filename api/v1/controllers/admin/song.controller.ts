@@ -39,13 +39,20 @@ export const create = async (req: Request, res: Response) => {
 export const createPost = async (req: Request, res: Response) => {
   const slug = convertToSlug(req.body.title);
 
+  // console.log("FILES:", req["files"]);
+
+  if (req.body.status) {
+    req.body.status = JSON.parse(req.body.status);
+  }
+
   const dataSong = {
     title: req.body.title,
     topicId: req.body.topicId,
     singerId: req.body.singerId,
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
-    avatar: req.body.avatar[0].thumbUrl,
+    avatar: req?.body?.avatar?.[0] || "", 
+    audio: req?.body?.audio?.[0] || "",    
     slug: slug
   };
 
