@@ -21,4 +21,6 @@ router.post(
   createPost
 );
 
+router.delete("/delete/:id", controller.deleteSong);
+
 export const songRoutes: Router = router;

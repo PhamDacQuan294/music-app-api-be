@@ -65,3 +65,19 @@ export const createPost = async (req: Request, res: Response) => {
     message: "Thêm thành công"
   })
 }
+
+// [DELETE] /api/v1/admin/songs/delete/:id
+export const deleteSong = async (req: Request, res: Response) => {
+  const id: string = req.params.id;
+  
+  await Song.updateOne({
+    _id: id
+  }, {
+    deleted: true,
+    deletedAt: new Date()
+  })
+
+  res.json({
+    code: 200
+  })
+}
