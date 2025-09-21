@@ -86,7 +86,20 @@ export const deleteSong = async (req: Request, res: Response) => {
 export const editPatch = async (req: Request, res: Response) => {
   const id: string = req.params.id;
 
-  console.log(req.body);
+  let avatar = "";
+  if (Array.isArray(req.body.avatar)) {
+    avatar = req.body.avatar[0];
+  } else {
+    avatar = req.body.avatar;
+  }
+
+  let audio = "";
+  if (Array.isArray(req.body.audio)) {
+    audio = req.body.audio[0];
+  } else {
+    audio = req.body.audio;
+  }
+
 
   if (req.body.status) {
     req.body.status = JSON.parse(req.body.status);
@@ -98,12 +111,10 @@ export const editPatch = async (req: Request, res: Response) => {
     singerId: req.body.singerId,
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
-    avatar: req?.body?.avatar?.[0] || "", 
-    audio: req?.body?.audio?.[0] || "",   
+    avatar: avatar || "",
+    audio: audio|| "",
     lyrics: req.body.lyrics,
   };
-
-  console.log(dataSong);
 
   await Song.updateOne({
     _id: id
