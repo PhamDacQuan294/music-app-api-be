@@ -33,6 +33,6 @@ router.patch(
   controller.editPatch
 );
 
-router.get("/search-song", controller.searchSong)
+// router.get("/search-song", controller.searchSong)
 
 export const songRoutes: Router = router;

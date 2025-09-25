@@ -3,51 +3,37 @@ import Song from "../../models/song.model";
 import Topic from "../../models/topic.model";
 import Singer from "../../models/singer.model";
 import { convertToSlug } from "../../helpers/convertToSlug";
+import { filterStatus } from "../../helpers/filterStatus";
+import { objectSearh } from "../../helpers/search";
 
 // [GET] /api/v1/admin/songs
 export const index = async (req: Request, res: Response) => {
-  let filterStatus = [
-    {
-      name: "Tất cả",
-      status: "",
-      class: ""
-    },
-    {
-      name: "Hoạt động",
-      status: "active",
-      class: ""
-    },
-     {
-      name: "Dừng hoạt động",
-      status: "inactive",
-      class: ""
-    }
-  ];
-
-  if (req.query.status) {
-    const index = filterStatus.findIndex(item => item.status == req.query.status);
-    filterStatus[index].class = "active";
-  } else {
-    const index = filterStatus.findIndex(item => item.status == "");
-    filterStatus[index].class = "active";
-  }
+  const statusFilters = filterStatus(req.query);
 
   let find = {
     deleted: false
   }
 
-  // console.log(req.query.status)
-
   if (req.query.status) {
     find["status"] = req.query.status;
   }
+
+  // Search
+  const searchObj = objectSearh(req.query);
+
+  if (searchObj) {
+    find["$or"] = [
+      { title: searchObj.keywordRegex },
+      { slug: searchObj.stringSlugRegex }
+    ];
+  } 
 
   const songs = await Song.find(find);
 
   res.json({
     code: 200,
     songs: songs,
-    filterStatus: filterStatus
+    filterStatus: statusFilters
   })
 }
 
