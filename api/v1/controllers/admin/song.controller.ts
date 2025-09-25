@@ -44,8 +44,6 @@ export const index = async (req: Request, res: Response) => {
 
   const songs = await Song.find(find);
 
-  console.log(songs);
-
   res.json({
     code: 200,
     songs: songs,
@@ -162,4 +160,39 @@ export const editPatch = async (req: Request, res: Response) => {
     code: 200
   })
 
+}
+
+// [GET] /api/v1/admin/songs/search-song
+export const searchSong = async (req: Request, res: Response) => {
+  try {
+    const keyword: string = `${req.query.keyword || ""}`;
+    
+    let newSongs: any[] = [];
+
+    if (keyword) {
+      const keywordRegex = new RegExp(keyword, "i");
+
+      const stringSlug = convertToSlug(keyword);
+      const stringSlugRegex = new RegExp(stringSlug, "i");
+
+      const songs = await Song.find({
+        $or: [
+          { title: keywordRegex },
+          { slug: stringSlugRegex }
+        ]
+      }).lean();
+
+      newSongs.push(songs);
+    } 
+
+    res.json({
+      code: 200,
+      newSongs: newSongs
+    })
+  } catch (error) {
+    return res.status(500).json({
+      code: 500,
+      message: "Lỗi server"
+    });
+  }
 }
