@@ -200,3 +200,24 @@ export const changeStatus = async (req: Request, res: Response) => {
     status
   })
 }
+
+// [PATCH] /api/v1/admin/songs/change-multi
+export const changeMulti = async (req: Request, res: Response) => {
+  const type: string = req.body.status;
+  const ids = req.body.ids;
+
+  switch (type) {
+    case "active":
+      await Song.updateMany({ _id: { $in: ids } }, { status: "active" });
+      break;
+    case "inactive":
+      await Song.updateMany({ _id: { $in: ids } }, { status: "inactive" });
+      break;
+    default:
+      break;
+  }
+
+  res.json({
+    code: 200
+  })
+}
