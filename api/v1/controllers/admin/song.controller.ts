@@ -182,3 +182,21 @@ export const searchSong = async (req: Request, res: Response) => {
     });
   }
 }
+
+// [PATCH] /api/v1/admin/songs/change-status/:status/:id
+export const changeStatus = async (req: Request, res: Response) => {
+  const status: string = req.params.status;
+  const id: string = req.params.id;
+
+  await Song.updateOne({
+    _id: id
+  }, {
+    status: status
+  })
+
+  res.json({
+    code: 200,
+    id,
+    status
+  })
+}
