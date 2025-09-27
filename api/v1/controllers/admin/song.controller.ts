@@ -26,17 +26,17 @@ export const index = async (req: Request, res: Response) => {
       { title: searchObj.keywordRegex },
       { slug: searchObj.stringSlugRegex }
     ];
-  } 
+  }
 
   // Sort
   let sort: any = {};
 
   if (req.query.sortKey && req.query.sortValue) {
     const sortKey = String(req.query.sortKey);
-    const sortValue = req.query.sortValue === "desc" ? -1 : 1; 
+    const sortValue = req.query.sortValue === "desc" ? -1 : 1;
     sort[sortKey] = sortValue;
   } else {
-    sort["position"] = -1; 
+    sort["position"] = -1;
   }
 
   const songs = await Song.find(find).sort(sort);
@@ -91,8 +91,8 @@ export const createPost = async (req: Request, res: Response) => {
     singerId: req.body.singerId,
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
-    avatar: req?.body?.avatar?.[0] || "", 
-    audio: req?.body?.audio?.[0] || "",   
+    avatar: req?.body?.avatar?.[0] || "",
+    audio: req?.body?.audio?.[0] || "",
     lyrics: req.body.lyrics,
     slug: slug
   };
@@ -109,7 +109,7 @@ export const createPost = async (req: Request, res: Response) => {
 // [DELETE] /api/v1/admin/songs/delete/:id
 export const deleteSong = async (req: Request, res: Response) => {
   const id: string = req.params.id;
-  
+
   await Song.updateOne({
     _id: id
   }, {
@@ -161,7 +161,7 @@ export const editPatch = async (req: Request, res: Response) => {
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
     avatar: avatar || "",
-    audio: audio|| "",
+    audio: audio || "",
     lyrics: req.body.lyrics,
   };
 
@@ -180,7 +180,7 @@ export const editPatch = async (req: Request, res: Response) => {
 export const searchSong = async (req: Request, res: Response) => {
   try {
     const keyword: string = `${req.query.keyword || ""}`;
-    
+
     let newSongs: any[] = [];
 
     if (keyword) {
@@ -197,7 +197,7 @@ export const searchSong = async (req: Request, res: Response) => {
       }).lean();
 
       newSongs.push(songs);
-    } 
+    }
 
     res.json({
       code: 200,
@@ -242,10 +242,22 @@ export const changeMulti = async (req: Request, res: Response) => {
       await Song.updateMany({ _id: { $in: ids } }, { status: "inactive" });
       break;
     case "delete-all":
-      await Song.updateMany({ _id: { $in: ids }}, {
+      await Song.updateMany({ _id: { $in: ids } }, {
         deleted: true,
         deletedAt: new Date()
       })
+      break;
+    case "change-position":
+      for (const item of ids) {
+        let [id, position] = item.split("-");
+        position = parseInt(position);
+        await Song.updateOne({
+          _id: id
+        }, {
+          position: position
+        });
+      }
+      break;
     default:
       break;
   }
