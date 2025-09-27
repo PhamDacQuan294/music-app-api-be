@@ -28,7 +28,18 @@ export const index = async (req: Request, res: Response) => {
     ];
   } 
 
-  const songs = await Song.find(find);
+  // Sort
+  let sort: any = {};
+
+  if (req.query.sortKey && req.query.sortValue) {
+    const sortKey = String(req.query.sortKey);
+    const sortValue = req.query.sortValue === "desc" ? -1 : 1; 
+    sort[sortKey] = sortValue;
+  } else {
+    sort["position"] = -1; 
+  }
+
+  const songs = await Song.find(find).sort(sort);
 
   res.json({
     code: 200,
