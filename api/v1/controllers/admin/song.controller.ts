@@ -77,9 +77,17 @@ export const createPost = async (req: Request, res: Response) => {
     req.body.status = JSON.parse(req.body.status);
   }
 
+  if (req.body.position == "") {
+    const countSongs = await Song.countDocuments();
+    req.body.position = countSongs + 1;
+  } else {
+    req.body.position = parseInt(req.body.position);
+  }
+
   const dataSong = {
     title: req.body.title,
     topicId: req.body.topicId,
+    position: req.body.position,
     singerId: req.body.singerId,
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
@@ -137,9 +145,18 @@ export const editPatch = async (req: Request, res: Response) => {
     req.body.status = JSON.parse(req.body.status);
   }
 
+  if (req.body.position == "") {
+    const countSongs = await Song.countDocuments();
+    req.body.position = countSongs + 1;
+  } else {
+    req.body.position = parseInt(req.body.position);
+  }
+
+
   const dataSong = {
     title: req.body.title,
     topicId: req.body.topicId,
+    position: req.body.position,
     singerId: req.body.singerId,
     description: req.body.description,
     status: req.body.status === true ? "active" : "inactive",
