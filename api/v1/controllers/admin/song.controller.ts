@@ -39,12 +39,35 @@ export const index = async (req: Request, res: Response) => {
     sort["position"] = -1;
   }
 
-  const songs = await Song.find(find).sort(sort);
+  // Pagination
+  let objectPagination = {
+    currentPage: 1,
+    limitItems: 2,
+    skip: 0,
+  }
+
+  if (req.query.page) {
+    objectPagination.currentPage = parseInt(req.query.page as string, 10);
+  }
+
+  objectPagination["skip"]= (objectPagination.currentPage - 1) * objectPagination.limitItems;
+
+  const countTopics = await Song.countDocuments(find);
+  const totalPage = Math.ceil(countTopics/objectPagination.limitItems);
+  objectPagination["totalPage"] = totalPage;
+
+  // End pagination
+
+  const songs = await Song.find(find)
+    .limit(objectPagination.limitItems)
+    .skip(objectPagination.skip)
+    .sort(sort);
 
   res.json({
     code: 200,
     songs: songs,
-    filterStatus: statusFilters
+    filterStatus: statusFilters,
+    pagination: objectPagination
   })
 }
 
@@ -249,8 +272,15 @@ export const changeMulti = async (req: Request, res: Response) => {
       break;
     case "change-position":
       for (const item of ids) {
+         // Check nếu item không chứa dấu "-" thì bỏ qua hoặc log cảnh báo
+        if (!item.includes("-")) continue;
+
         let [id, position] = item.split("-");
         position = parseInt(position);
+
+        // Kiểm tra lại position hợp lệ
+        if (isNaN(position)) continue;
+
         await Song.updateOne({
           _id: id
         }, {
