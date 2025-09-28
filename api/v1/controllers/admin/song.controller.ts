@@ -42,7 +42,7 @@ export const index = async (req: Request, res: Response) => {
   // Pagination
   let objectPagination = {
     currentPage: 1,
-    limitItems: 2,
+    limitItems: 4,
     skip: 0,
   }
 

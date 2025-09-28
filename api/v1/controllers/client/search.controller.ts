@@ -4,12 +4,13 @@ import Song from "../../models/song.model";
 import Singer from "../../models/singer.model";
 import FavoriteSong from "../../models/favorite-song.model";
 
-
 // [GET] /api/v1/search/:type
 export const result = async (req: Request, res: Response) => {
   try {
     const keyword: string = `${req.query.keyword || ""}`;
     const type: string = req.params.type;
+
+    console.log(keyword);
 
     let newSongs: any[] = [];
 
