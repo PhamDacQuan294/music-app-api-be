@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import Song from "../../models/song.model";
 import Topic from "../../models/topic.model";
 import Singer from "../../models/singer.model";
@@ -59,15 +59,15 @@ export const index = async (req: Request, res: Response) => {
   // End pagination
 
   const songs = await Song.find(find)
-    .limit(objectPagination.limitItems)
-    .skip(objectPagination.skip)
-    .sort(sort);
+    // .limit(objectPagination.limitItems)
+    // .skip(objectPagination.skip)
+    // .sort(sort);
 
   res.json({
     code: 200,
     songs: songs,
     filterStatus: statusFilters,
-    pagination: objectPagination
+    // pagination: objectPagination
   })
 }
 
@@ -92,7 +92,17 @@ export const create = async (req: Request, res: Response) => {
 
 // [POST] /api/v1/admin/songs/create
 export const createPost = async (req: Request, res: Response) => {
+ try {
   const slug = convertToSlug(req.body.title);
+
+  const existed = await Song.findOne({slug});
+
+  if (existed) {
+    res.json({
+      code: 400,
+      message: "Tiêu đề đã tồn tại, vui lòng nhập tiêu đề khác!"
+    })
+  }
 
   // console.log("FILES:", req["files"]);
 
@@ -100,7 +110,8 @@ export const createPost = async (req: Request, res: Response) => {
     req.body.status = JSON.parse(req.body.status);
   }
 
-  if (req.body.position == "") {
+
+  if (!req.body.position || req.body.position == "") {
     const countSongs = await Song.countDocuments();
     req.body.position = countSongs + 1;
   } else {
@@ -125,8 +136,15 @@ export const createPost = async (req: Request, res: Response) => {
 
   res.json({
     code: 200,
-    message: "Thêm thành công"
+    song: song
   })
+ } catch (error) {
+  console.log(error);
+  res.json({
+    code: 500,
+    message: "Có lỗi xảy ra ở server"
+  })
+ }
 }
 
 // [DELETE] /api/v1/admin/songs/delete/:id
