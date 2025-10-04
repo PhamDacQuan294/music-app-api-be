@@ -50,18 +50,18 @@ export const index = async (req: Request, res: Response) => {
     objectPagination.currentPage = parseInt(req.query.page as string, 10);
   }
 
-  objectPagination["skip"]= (objectPagination.currentPage - 1) * objectPagination.limitItems;
+  objectPagination["skip"] = (objectPagination.currentPage - 1) * objectPagination.limitItems;
 
   const countTopics = await Song.countDocuments(find);
-  const totalPage = Math.ceil(countTopics/objectPagination.limitItems);
+  const totalPage = Math.ceil(countTopics / objectPagination.limitItems);
   objectPagination["totalPage"] = totalPage;
 
   // End pagination
 
   const songs = await Song.find(find)
-    // .limit(objectPagination.limitItems)
-    // .skip(objectPagination.skip)
-    // .sort(sort);
+  // .limit(objectPagination.limitItems)
+  // .skip(objectPagination.skip)
+  // .sort(sort);
 
   res.json({
     code: 200,
@@ -92,59 +92,59 @@ export const create = async (req: Request, res: Response) => {
 
 // [POST] /api/v1/admin/songs/create
 export const createPost = async (req: Request, res: Response) => {
- try {
-  const slug = convertToSlug(req.body.title);
+  try {
+    const slug = convertToSlug(req.body.title);
 
-  const existed = await Song.findOne({slug});
+    const existed = await Song.findOne({ slug });
 
-  if (existed) {
+    if (existed) {
+      res.json({
+        code: 400,
+        message: "Tiêu đề đã tồn tại, vui lòng nhập tiêu đề khác!"
+      })
+    }
+
+    // console.log("FILES:", req["files"]);
+
+    if (req.body.status) {
+      req.body.status = JSON.parse(req.body.status);
+    }
+
+
+    if (!req.body.position || req.body.position == "") {
+      const countSongs = await Song.countDocuments();
+      req.body.position = countSongs + 1;
+    } else {
+      req.body.position = parseInt(req.body.position);
+    }
+
+    const dataSong = {
+      title: req.body.title,
+      topicId: req.body.topicId,
+      position: req.body.position,
+      singerId: req.body.singerId,
+      description: req.body.description,
+      status: req.body.status === true ? "active" : "inactive",
+      avatar: req?.body?.avatar?.[0] || "",
+      audio: req?.body?.audio?.[0] || "",
+      lyrics: req.body.lyrics,
+      slug: slug
+    };
+
+    const song = new Song(dataSong);
+    await song.save();
+
     res.json({
-      code: 400,
-      message: "Tiêu đề đã tồn tại, vui lòng nhập tiêu đề khác!"
+      code: 200,
+      song: song
+    })
+  } catch (error) {
+    console.log(error);
+    res.json({
+      code: 500,
+      message: "Có lỗi xảy ra ở server"
     })
   }
-
-  // console.log("FILES:", req["files"]);
-
-  if (req.body.status) {
-    req.body.status = JSON.parse(req.body.status);
-  }
-
-
-  if (!req.body.position || req.body.position == "") {
-    const countSongs = await Song.countDocuments();
-    req.body.position = countSongs + 1;
-  } else {
-    req.body.position = parseInt(req.body.position);
-  }
-
-  const dataSong = {
-    title: req.body.title,
-    topicId: req.body.topicId,
-    position: req.body.position,
-    singerId: req.body.singerId,
-    description: req.body.description,
-    status: req.body.status === true ? "active" : "inactive",
-    avatar: req?.body?.avatar?.[0] || "",
-    audio: req?.body?.audio?.[0] || "",
-    lyrics: req.body.lyrics,
-    slug: slug
-  };
-
-  const song = new Song(dataSong);
-  await song.save();
-
-  res.json({
-    code: 200,
-    song: song
-  })
- } catch (error) {
-  console.log(error);
-  res.json({
-    code: 500,
-    message: "Có lỗi xảy ra ở server"
-  })
- }
 }
 
 // [DELETE] /api/v1/admin/songs/delete/:id
@@ -159,7 +159,8 @@ export const deleteSong = async (req: Request, res: Response) => {
   })
 
   res.json({
-    code: 200
+    code: 200,
+    id
   })
 }
 
@@ -210,9 +211,11 @@ export const editPatch = async (req: Request, res: Response) => {
     _id: id
   }, dataSong);
 
+  const updatedSong = await Song.findById(id);
 
   res.json({
-    code: 200
+    code: 200,
+    song: updatedSong
   })
 
 }
@@ -290,14 +293,9 @@ export const changeMulti = async (req: Request, res: Response) => {
       break;
     case "change-position":
       for (const item of ids) {
-         // Check nếu item không chứa dấu "-" thì bỏ qua hoặc log cảnh báo
-        if (!item.includes("-")) continue;
-
         let [id, position] = item.split("-");
-        position = parseInt(position);
 
-        // Kiểm tra lại position hợp lệ
-        if (isNaN(position)) continue;
+        position = parseInt(position);
 
         await Song.updateOne({
           _id: id
@@ -311,6 +309,6 @@ export const changeMulti = async (req: Request, res: Response) => {
   }
 
   res.json({
-    code: 200
+    code: 200,
   })
 }
