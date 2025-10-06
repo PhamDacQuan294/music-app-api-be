@@ -39,11 +39,62 @@ export const index = async (req: Request, res: Response) => {
   }
 
   const topics = await Topic.find(find)
-  .sort(sort);
+    .sort(sort);
 
   res.json({
     code: 200,
     topics: topics,
     filterStatus: statusFilters
+  })
+}
+
+// [PATCH] /api/v1/admin/topics/change-multi
+export const changeMulti = async (req: Request, res: Response) => {
+  const type: string = req.body.status;
+  const ids = req.body.ids;
+
+  switch (type) {
+    case "active":
+      await Topic.updateMany({ _id: { $in: ids } }, { status: "active" });
+      break;
+    case "inactive":
+      await Topic.updateMany({ _id: { $in: ids } }, { status: "inactive" });
+      break;
+    case "delete-all":
+      await Topic.updateMany({ _id: { $in: ids } }, {
+        deleted: true,
+        deletedAt: new Date()
+      })
+      break;
+    case "change-position":
+      const idList = [];
+      for (const item of ids) {
+        let [id, position] = item.split("-");
+        idList.push(id);
+
+        position = parseInt(position);
+
+        await Topic.updateOne({
+          _id: id
+        }, {
+          position: position
+        });
+      }
+      const newTopics = await Topic.find({ _id: { $in: idList } });
+      
+      res.json({
+        code: 200,
+        newTopics: newTopics
+      });
+      return;
+    default:
+      break;
+  }
+
+  const newTopics = await Topic.find({ _id: { $in: ids } });
+
+  res.json({
+    code: 200,
+    newTopics: newTopics
   })
 }
