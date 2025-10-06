@@ -59,15 +59,15 @@ export const index = async (req: Request, res: Response) => {
   // End pagination
 
   const songs = await Song.find(find)
-  // .limit(objectPagination.limitItems)
-  // .skip(objectPagination.skip)
-  // .sort(sort);
+  .limit(objectPagination.limitItems)
+  .skip(objectPagination.skip)
+  .sort(sort);
 
   res.json({
     code: 200,
     songs: songs,
     filterStatus: statusFilters,
-    // pagination: objectPagination
+    pagination: objectPagination
   })
 }
 
