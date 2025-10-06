@@ -59,9 +59,9 @@ export const index = async (req: Request, res: Response) => {
   // End pagination
 
   const songs = await Song.find(find)
-  .limit(objectPagination.limitItems)
-  .skip(objectPagination.skip)
-  .sort(sort);
+    .limit(objectPagination.limitItems)
+    .skip(objectPagination.skip)
+    .sort(sort);
 
   res.json({
     code: 200,
@@ -278,22 +278,33 @@ export const changeMulti = async (req: Request, res: Response) => {
   const type: string = req.body.status;
   const ids = req.body.ids;
 
+  const cleanIds = ids.map(item => item.includes("-") ? item.split("-")[0] : item);
+
   switch (type) {
     case "active":
-      await Song.updateMany({ _id: { $in: ids } }, { status: "active" });
+      await Song.updateMany({ _id: { $in: cleanIds } }, { status: "active" });
       break;
     case "inactive":
-      await Song.updateMany({ _id: { $in: ids } }, { status: "inactive" });
+      await Song.updateMany({ _id: { $in: cleanIds } }, { status: "inactive" });
       break;
     case "delete-all":
-      await Song.updateMany({ _id: { $in: ids } }, {
+      await Song.updateMany({ _id: { $in: cleanIds } }, {
         deleted: true,
         deletedAt: new Date()
       })
-      break;
+      let find = {
+        deleted: false
+      };
+      const songs = await Song.find(find);
+      return res.json({
+        code: 200,
+        newType: songs
+      })
     case "change-position":
+      const idList = [];
       for (const item of ids) {
         let [id, position] = item.split("-");
+        idList.push(id);
 
         position = parseInt(position);
 
@@ -303,12 +314,21 @@ export const changeMulti = async (req: Request, res: Response) => {
           position: position
         });
       }
-      break;
+      const newSongs = await Song.find({ _id: { $in: idList } });
+
+      res.json({
+        code: 200,
+        newType: newSongs
+      });
+      return;
     default:
       break;
   }
 
+  const newSongs = await Song.find({ _id: { $in: cleanIds } });
+
   res.json({
     code: 200,
-  })
+    newType: newSongs
+  });
 }
