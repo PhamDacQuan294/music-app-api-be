@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Topic from "../../models/topic.model";
 import { filterStatus } from "../../helpers/filterStatus";
 import { objectSearh } from "../../helpers/search";
+import { convertToSlug } from "../../helpers/convertToSlug";
 
 // [GET] /api/v1/admin/topics
 export const index = async (req: Request, res: Response) => {
@@ -108,4 +109,55 @@ export const changeMulti = async (req: Request, res: Response) => {
     code: 200,
     newType: newTopics,
   })
+}
+
+// [POST] /api/v1/admin/topics/create
+export const createPost = async (req: Request, res: Response) => {
+  try {
+    const slug = convertToSlug(req.body.title);
+    
+    const existed = await Topic.findOne({ slug });
+
+    if (existed) {
+      res.json({
+        code: 400,
+        message: "Tiêu đề đã tồn tại, vui lòng nhập tiêu đề khác!"
+      })
+    }
+
+    if (req.body.status) {
+      req.body.status = JSON.parse(req.body.status);
+    }
+
+
+    if (!req.body.position || req.body.position == "") {
+      const countTopics = await Topic.countDocuments();
+      req.body.position = countTopics + 1;
+    } else {
+      req.body.position = parseInt(req.body.position);
+    }
+
+    const dataSong = {
+      title: req.body.title,
+      position: req.body.position,
+      description: req.body.description,
+      status: req.body.status === true ? "active" : "inactive",
+      avatar: req?.body?.avatar?.[0] || "",
+      slug: slug
+    };
+
+    const topic = new Topic(dataSong);
+    await topic.save();
+
+    res.json({
+      code: 200,
+      topic: topic
+    })
+
+  } catch (error) {
+    res.json({
+      code: 500,
+      message: "Có lỗi xảy ra ở server"
+    })
+  }
 }
