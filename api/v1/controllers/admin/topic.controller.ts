@@ -69,6 +69,24 @@ export const index = async (req: Request, res: Response) => {
   })
 }
 
+// [PATCH] /api/v1/admin/topics/change-status/:status/:id
+export const changeStatus = async (req: Request, res: Response) => {
+  const status: string = req.params.status;
+  const id: string = req.params.id;
+
+  await Topic.updateOne({
+    _id: id
+  }, {
+    status: status
+  })
+
+  res.json({
+    code: 200,
+    id,
+    status
+  })
+}
+
 // [PATCH] /api/v1/admin/topics/change-multi
 export const changeMulti = async (req: Request, res: Response) => {
   const type: string = req.body.status;
