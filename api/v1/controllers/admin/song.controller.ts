@@ -52,8 +52,8 @@ export const index = async (req: Request, res: Response) => {
 
   objectPagination["skip"] = (objectPagination.currentPage - 1) * objectPagination.limitItems;
 
-  const countTopics = await Song.countDocuments(find);
-  const totalPage = Math.ceil(countTopics / objectPagination.limitItems);
+  const countSongs = await Song.countDocuments(find);
+  const totalPage = Math.ceil(countSongs / objectPagination.limitItems);
   objectPagination["totalPage"] = totalPage;
 
   // End pagination

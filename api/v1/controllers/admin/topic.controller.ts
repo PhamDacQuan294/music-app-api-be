@@ -8,8 +8,6 @@ import { convertToSlug } from "../../helpers/convertToSlug";
 export const index = async (req: Request, res: Response) => {
   const statusFilters = filterStatus(req.query);
 
-  // console.log(req.query.keyword);
-
   let find = {
     deleted: false
   };
@@ -39,13 +37,35 @@ export const index = async (req: Request, res: Response) => {
     sort["position"] = -1;
   }
 
+  // Pagination
+  let objectPagination = {
+    currentPage: 1,
+    limitItems: 4,
+    skip: 0,
+  }
+
+  if (req.query.page) {
+    objectPagination.currentPage = parseInt(req.query.page as string, 10);
+  }
+
+  objectPagination["skip"] = (objectPagination.currentPage - 1) * objectPagination.limitItems;
+
+  const countTopics = await Topic.countDocuments(find);
+  const totalPage = Math.ceil(countTopics / objectPagination.limitItems);
+  objectPagination["totalPage"] = totalPage;
+
+  // End pagination
+
   const topics = await Topic.find(find)
+    .limit(objectPagination.limitItems)
+    .skip(objectPagination.skip)
     .sort(sort);
 
   res.json({
     code: 200,
     topics: topics,
-    filterStatus: statusFilters
+    filterStatus: statusFilters,
+    pagination: objectPagination
   })
 }
 
