@@ -23,5 +23,16 @@ router.post(
   controller.createPost
 );
 
+router.delete("/delete/:id", controller.deleteTopic);
+
+router.patch(
+  "/edit/:id", 
+  upload.fields([
+    { name: 'avatar', maxCount: 1 }, 
+  ]),
+  uploadFields, 
+  controller.editPatch
+);
+
 
 export const topicRoutes: Router = router;

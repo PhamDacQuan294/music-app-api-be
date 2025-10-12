@@ -199,3 +199,72 @@ export const createPost = async (req: Request, res: Response) => {
     })
   }
 }
+
+// [DELETE] /api/v1/admin/topics/delete/:id
+export const deleteTopic = async (req: Request, res: Response) => {
+  const id: string = req.params.id;
+
+  await Topic.updateOne({
+    _id: id
+  }, {
+    deleted: true,
+    deletedAt: new Date()
+  })
+
+  res.json({
+    code: 200,
+    id
+  })
+}
+
+// [PATCH] /api/v1/admin/topics/edit/:id
+export const editPatch = async (req: Request, res: Response) => {
+  try {
+    const id: string = req.params.id;
+
+    let avatar = "";
+
+    if (Array.isArray(req.body.avatar)) {
+      avatar = req.body.avatar[0];
+    } else {
+      avatar = req.body.avatar;
+    }
+
+    if (req.body.status) {
+      req.body.status = JSON.parse(req.body.status);
+    }
+
+    if (req.body.position == "") {
+      const countSongs = await Topic.countDocuments();
+      req.body.position = countSongs + 1;
+    } else {
+      req.body.position = parseInt(req.body.position);
+    }
+
+
+    const dataTopic = {
+      title: req.body.title,
+      description: req.body.description,
+      position: req.body.position,
+      status: req.body.status === true ? "active" : "inactive",
+      avatar: avatar || "",
+    };
+
+    await Topic.updateOne({
+      _id: id
+    }, dataTopic);
+
+    const updatedTopic = await Topic.findById(id);
+
+    res.json({
+      code: 200,
+      topic: updatedTopic
+    })
+
+  } catch (error) {
+    console.log(error)
+    res.json({
+      code: 400,
+    })
+  }
+}
