@@ -26,7 +26,25 @@ export const index = async (req: Request, res: Response) => {
   }
   // End Search
 
-  const singers = await Singer.find(find);
+  // Sort
+  let sort: any = {};
+
+  if (req.query.sortKey && req.query.sortValue) {
+    let sortKey = String(req.query.sortKey);
+    const sortValue = req.query.sortValue === "desc" ? -1 : 1;
+
+    if (sortKey === "title") {
+      sortKey = "fullName";
+    }
+    
+    sort[sortKey] = sortValue;
+  } else {
+    sort["position"] = -1;
+  }
+  // End Sort
+
+  const singers = await Singer.find(find)
+    .sort(sort);
 
   res.json({
     code: 200,
