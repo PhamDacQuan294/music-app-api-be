@@ -94,8 +94,6 @@ export const changeMulti = async (req: Request, res: Response) => {
 
   const cleanIds = ids.map(item => item.includes("-") ? item.split("-")[0] : item);
 
-  console.log(ids);
-
   switch (type) {
     case "active":
       await Topic.updateMany({ _id: { $in: cleanIds } }, { status: "active" });

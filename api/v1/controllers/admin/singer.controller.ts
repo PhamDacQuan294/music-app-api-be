@@ -52,3 +52,63 @@ export const index = async (req: Request, res: Response) => {
     filterStatus: statusFilters,
   })
 }
+
+// [PATCH] /api/v1/admin/singers/change-multi
+export const changeMulti = async (req: Request, res: Response) => {
+  const type: string = req.body.status;
+  const ids = req.body.ids;
+
+  const cleanIds = ids.map(item => item.includes("-") ? item.split("-")[0] : item);
+
+  switch (type) {
+    case "active":
+      await Singer.updateMany({ _id: { $in: cleanIds } }, { status: "active" });
+      break;
+    case "inactive":
+      await Singer.updateMany({ _id: { $in: cleanIds } }, { status: "inactive" });
+      break;
+     case "delete-all":
+      await Singer.updateMany({ _id: { $in: cleanIds } }, {
+        deleted: true,
+        deletedAt: new Date()
+      })
+      let find = {
+        deleted: false
+      };
+      const singers = await Singer.find(find);
+      return res.json({
+        code: 200,
+        newType: singers
+      })
+    case "change-position":
+      const idList = [];
+      for (const item of ids) {
+        let [id, position] = item.split("-");
+        idList.push(id);
+
+        position = parseInt(position);
+
+        await Singer.updateOne({
+          _id: id
+        }, {
+          position: position
+        });
+      }
+      const newSingers = await Singer.find({ _id: { $in: idList } });
+
+      res.json({
+        code: 200,
+        newType: newSingers
+      });
+      return;
+    default:
+      break;
+  }
+
+  const newSingers = await Singer.find({ _id: { $in: cleanIds } })
+
+  res.json({
+    code: 200,
+    newType: newSingers,
+  })
+}
