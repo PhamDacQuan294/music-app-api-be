@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import * as database from "./config/database";
+import * as database from "./api/v1/config/database";
 import clientRoutes from "./api/v1/routes/client/index.route";
 import adminRoutes from "./api/v1/routes/admin/index.route";
 
