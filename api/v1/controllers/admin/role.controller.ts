@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import e, { Request, Response } from "express";
 import Role from "../../models/role.model";
 import { systemConfig } from "../../config/config";
 
@@ -18,8 +18,17 @@ export const index = async (req: Request, res: Response) => {
 
 // [POST] /admin/roles/create
 export const createPost = async (req: Request, res: Response) => {
-  const record = new Role(req.body);
-  await record.save();
+  try {
+    const record = new Role(req.body);
+    await record.save();
 
-  res.redirect(`/${systemConfig.prefixAdmin}/roles/permissions`);
+    res.json({
+      code: 200
+    })
+  } catch (error) {
+    console.log(error);
+    res.json({
+      code: 500
+    })
+  }
 }
