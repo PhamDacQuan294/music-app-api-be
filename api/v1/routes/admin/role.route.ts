@@ -7,4 +7,8 @@ router.get("/permissions", controller.index);
 
 router.post("/create", controller.createPost);
 
+router.patch("/edit/:id", controller.editPatch);
+
+router.delete("/delete/:id", controller.deleteItem);
+
 export const roleRoutes: Router = router;
