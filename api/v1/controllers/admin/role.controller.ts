@@ -72,3 +72,25 @@ export const deleteItem = async (req: Request, res: Response) => {
     })
   }
 }
+
+// [PATCH] /admin/roles/permissions
+export const permissionsPatch = async (req: Request, res: Response) => {
+  try {
+    const permissions = JSON.parse(req.body.permissions);
+
+    for (const item of permissions) {
+      await Role.updateOne({ _id: item.id }, { permissions: item.permissions });
+    }
+
+    res.json({
+      code: 200,
+      message: "Cập nhật phân quyền thành công!",
+    })
+  } catch (err) {
+    console.error("Lỗi cập nhật phân quyền:", err);
+    res.json({
+      code: 400,
+      message: "Dữ liệu gửi lên không hợp lệ hoặc lỗi server!",
+    })
+  }
+};
