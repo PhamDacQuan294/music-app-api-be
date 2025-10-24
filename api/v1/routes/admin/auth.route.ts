@@ -8,4 +8,9 @@ router.post(
   controller.loginPost
 );
 
+router.post(
+  "/varify", 
+  controller.verify
+);
+
 export const authRoutes: Router = router;

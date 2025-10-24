@@ -49,3 +49,23 @@ export const loginPost = async (req: Request, res: Response) => {
     },
   })
 }
+
+// [POST] /admin/auth/verify
+export const verify = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+
+    const user = await Account.findOne({ token });
+
+    if (!user) {
+      return res.json({ code: 403, message: "Token không hợp lệ" });
+    }
+
+    return res.json({
+      code: 200,
+      message: "Token hợp lệ",
+    });
+  } catch (error) {
+    res.json({ code: 500, message: "Lỗi máy chủ" });
+  }
+};
