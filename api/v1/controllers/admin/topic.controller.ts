@@ -3,6 +3,7 @@ import Topic from "../../models/topic.model";
 import { filterStatus } from "../../helpers/filterStatus";
 import { objectSearh } from "../../helpers/search";
 import { convertToSlug } from "../../helpers/convertToSlug";
+import Account from "../../models/account.model";
 
 // [GET] /api/v1/admin/topics
 export const index = async (req: Request, res: Response) => {
@@ -56,17 +57,45 @@ export const index = async (req: Request, res: Response) => {
 
   // End pagination
 
-  const topics = await Topic.find(find)
+  const topicsDB = await Topic.find(find)
     .limit(objectPagination.limitItems)
     .skip(objectPagination.skip)
     .sort(sort);
 
+  const topics = [];
+
+  for (const topic of topicsDB) {
+    const plainTopic = topic.toObject();
+
+    // Người tạo
+    let createdByName = "Không rõ";
+    if (topic.createdBy?.account_id) {
+      const user = await Account.findOne({ _id: topic.createdBy.account_id });
+      if (user) createdByName = user.fullName;
+    }
+
+    // Người cập nhật gần nhất
+    let updatedByName = "Chưa cập nhật";
+    const updatedBy = topic.updatedBy?.slice(-1)[0];
+    if (updatedBy?.account_id) {
+      const userUpdated = await Account.findOne({ _id: updatedBy.account_id });
+      if (userUpdated) updatedByName = userUpdated.fullName;
+    }
+
+    topics.push({
+      ...plainTopic,
+      createdByName,
+      updatedByName,
+    });
+  }
+
   res.json({
     code: 200,
-    topics: topics,
+    topics,
     filterStatus: statusFilters,
-    pagination: objectPagination
-  })
+    pagination: objectPagination,
+  });
+
 }
 
 // [PATCH] /api/v1/admin/topics/change-status/:status/:id
@@ -74,10 +103,16 @@ export const changeStatus = async (req: Request, res: Response) => {
   const status: string = req.params.status;
   const id: string = req.params.id;
 
+  const updatedBy = {
+    account_id: res.locals.user._id,
+    updatedAt: new Date()
+  }
+
   await Topic.updateOne({
     _id: id
   }, {
-    status: status
+    status: status,
+    $push: { updatedBy: updatedBy }
   })
 
   res.json({
@@ -94,17 +129,25 @@ export const changeMulti = async (req: Request, res: Response) => {
 
   const cleanIds = ids.map(item => item.includes("-") ? item.split("-")[0] : item);
 
+  const updatedBy = {
+    account_id: res.locals.user._id,
+    updatedAt: new Date()
+  }
+
   switch (type) {
     case "active":
-      await Topic.updateMany({ _id: { $in: cleanIds } }, { status: "active" });
+      await Topic.updateMany({ _id: { $in: cleanIds } }, { status: "active", $push: { updatedBy: updatedBy }});
       break;
     case "inactive":
-      await Topic.updateMany({ _id: { $in: cleanIds } }, { status: "inactive" });
+      await Topic.updateMany({ _id: { $in: cleanIds } }, { status: "inactive", $push: { updatedBy: updatedBy }});
       break;
     case "delete-all":
       await Topic.updateMany({ _id: { $in: cleanIds } }, {
         deleted: true,
-        deletedAt: new Date()
+        deletedBy: {
+          account_id: res.locals.user._id,
+          deletedAt: new Date()
+        }
       })
       let find = {
         deleted: false
@@ -125,7 +168,8 @@ export const changeMulti = async (req: Request, res: Response) => {
         await Topic.updateOne({
           _id: id
         }, {
-          position: position
+          position: position,
+          $push: { updatedBy: updatedBy }
         });
       }
       const newTopics = await Topic.find({ _id: { $in: idList } });
@@ -151,7 +195,7 @@ export const changeMulti = async (req: Request, res: Response) => {
 export const createPost = async (req: Request, res: Response) => {
   try {
     const slug = convertToSlug(req.body.title);
-    
+
     const existed = await Topic.findOne({ slug });
 
     if (existed) {
@@ -173,25 +217,30 @@ export const createPost = async (req: Request, res: Response) => {
       req.body.position = parseInt(req.body.position);
     }
 
+    const createdBy = {
+      account_id: res.locals.user._id
+    };
+
     const dataSong = {
       title: req.body.title,
       position: req.body.position,
       description: req.body.description,
       status: req.body.status === true ? "active" : "inactive",
       avatar: req?.body?.avatar?.[0] || "",
-      slug: slug
+      slug: slug,
+      createdBy: createdBy 
     };
 
     const topic = new Topic(dataSong);
     await topic.save();
 
-    res.json({
+    return res.json({
       code: 200,
       topic: topic
     })
 
   } catch (error) {
-    res.json({
+    return res.json({
       code: 500,
       message: "Có lỗi xảy ra ở server"
     })

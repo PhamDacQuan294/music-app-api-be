@@ -7,11 +7,13 @@ import { roleRoutes } from "./role.route";
 import { accountRoutes } from "./account.route";
 import { authRoutes } from "./auth.route";
 
+import * as authMiddleware from "../../middlewares/admin/auth.middleware";
+
 const adminRoutes = (app: Express): void => {
 
   const PATH_ADMIN = `${systemConfig.prefixAdmin}`;
 
-  app.use(`${PATH_ADMIN}/topics`, topicRoutes);
+  app.use(`${PATH_ADMIN}/topics`, authMiddleware.requireAuth, topicRoutes);
 
   app.use(`${PATH_ADMIN}/songs`, songRoutes);
 
