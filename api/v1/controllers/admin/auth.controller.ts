@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Account from "../../models/account.model";
 import md5 from "md5";
+import Role from "../../models/role.model";
 
 // [POST] /admin/auth/login
 export const loginPost = async (req: Request, res: Response) => {
@@ -55,15 +56,21 @@ export const verify = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
 
-    const user = await Account.findOne({ token });
+    const user = await Account.findOne({ token }).select("-password");
 
     if (!user) {
       return res.json({ code: 403, message: "Token không hợp lệ" });
     }
 
+    const role = await Role.findOne({
+      _id: user.role_id
+    }).select("title permissions");
+
     return res.json({
       code: 200,
       message: "Token hợp lệ",
+      user: user,
+      role: role
     });
   } catch (error) {
     res.json({ code: 500, message: "Lỗi máy chủ" });
