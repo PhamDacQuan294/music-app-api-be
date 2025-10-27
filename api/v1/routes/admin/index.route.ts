@@ -8,6 +8,7 @@ import { accountRoutes } from "./account.route";
 import { authRoutes } from "./auth.route";
 
 import * as authMiddleware from "../../middlewares/admin/auth.middleware";
+import { statisticsRoutes } from "./statistics.route";
 
 const adminRoutes = (app: Express): void => {
 
@@ -24,6 +25,8 @@ const adminRoutes = (app: Express): void => {
   app.use(PATH_ADMIN + "/accounts", accountRoutes);
 
   app.use(PATH_ADMIN + "/auth", authRoutes);
+
+  app.use(PATH_ADMIN + "/statistics", statisticsRoutes);
 }
 
 export default adminRoutes;
